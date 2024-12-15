@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Block Shoot Game</title>
+    <style>
+        body { margin: 0; overflow: hidden; font-family: Arial, sans-serif; background: linear-gradient(120deg, #000000, #8b0000); }
+        #gameCanvas { display: block; margin: 0 auto; }
+        #gameOverScreen { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 32px; color: red; display: none; }
+        #startButton { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 10px 20px; font-size: 20px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+        #startButton:hover { background-color: #45a049; }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <div id="gameOverScreen">Game Over!</div>
+    <button id="startButton">Start Game</button>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        const startButton = document.getElementById('startButton');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const blockSize = 50;
+        const blockSpeed = 3;
+        const blocks = [];
+        let mouseX = canvas.width / 2;
+        let mouseY = canvas.height / 2;
+        const safeZoneRadius = 200;
+
+        function createBlocks() {
+            const numBlocks = 5;
+            for (let i = 0; i < numBlocks; i++) {
+                let startX, startY;
+                do {
+                    startX = Math.random() * canvas.width;
+                    startY = Math.random() * canvas.height;
+                } while (Math.sqrt(Math.pow(startX - canvas.width / 2, 2) + Math.pow(startY - canvas.height / 2, 2)) < safeZoneRadius);
+                
+                const dx = mouseX - startX;
+                const dy = mouseY - startY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                const normalizedDx = dx / distance;
+                const normalizedDy = dy / distance;
+                
+                const speed = blockSpeed + Math.random() * 1.5;
+                const block = {
+                    x: startX,
+                    y: startY,
+                    speed: speed,
+                    dx: normalizedDx * speed,
+                    dy: normalizedDy * speed
+                };
+                blocks.push(block);
+            }
+        }
+
+        function updateBlocks() {
+            for (let block of blocks) {
+                block.x += block.dx;
+                block.y += block.dy;
+                const dx = mouseX - block.x;
+                const dy = mouseY - block.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < blockSize / 2) gameOver();
+            }
+        }
+
+        function gameOver() {
+            gameOverScreen.style.display = 'block';
+            cancelAnimationFrame(animationFrame);
+        }
+
+        document.addEventListener('mousemove', (event) => {
+            mouseX = event.clientX;
+            mouseY = event.clientY;
+        });
+
+        let animationFrame;
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            updateBlocks();
+            for (let block of blocks) {
+                ctx.fillStyle = 'blue';
+                ctx.fillRect(block.x - blockSize / 2, block.y - blockSize / 2, blockSize, blockSize);
+            }
+            animationFrame = requestAnimationFrame(gameLoop);
+        }
+
+        function startGame() {
+            createBlocks();
+            setInterval(createBlocks, 1000);
+            startButton.style.display = 'none';
+            gameLoop();
+        }
+        startButton.addEventListener('click', startGame);
+    </script>
+</body>
+</html>

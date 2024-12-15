@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Volcano Game</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #87ceeb; /* Sky blue background */
+        }
+        canvas {
+            display: block;
+            background-color: #87ceeb; /* Sky blue background */
+        }
+        #gameOverScreen, #pauseScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            font-size: 24px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <div id="gameOverScreen">
+        <p id="gameOverMessage"></p>
+        <button onclick="restartGame()">Restart Game</button>
+    </div>
+    <div id="pauseScreen">
+        <p>Game Paused</p>
+        <button onclick="resumeGame()">Resume Game</button>
+    </div>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Set canvas size to match the window size
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        // Resize the canvas initially and whenever the window is resized
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Load background image
+        const backgroundImg = new Image();
+        backgroundImg.src = 'Eruption-PNG-File.png'; // Change this path to your background image
+        backgroundImg.onload = () => {
+            console.log("Background image loaded successfully");
+            gameLoop();
+        };
+        backgroundImg.onerror = () => {
+            console.error("Error loading background image");
+        };
+
+        const player = {
+            x: canvas.width / 2,
+            y: canvas.height - 100,
+            width: 50,
+            height: 50,  // Making the player a square
+            speed: 7,
+            dx: 0
+        };
+
+        const obstacles = [];
+        let frameCount = 0;
+        let score = 0;
+        let highScore = localStorage.getItem('highScore') || 0;
+        let gameRunning = true;
+        let gamePaused = false;
+
+        function createObstacle() {
+            const size = Math.random() * 50 + 50;
+            const obstacle = {
+                x: Math.random() * (canvas.width - 50),
+                y: -size,
+                width: 50,
+                height: 100,
+                speed: 3 + Math.random() * 2
+            };
+            obstacles.push(obstacle);
+        }
+
+        function update() {
+            if (!gameRunning || gamePaused) return;
+
+            frameCount++;
+            if (frameCount % 30 === 0) {
+                createObstacle();
+            }
+
+            player.x += player.dx;
+            player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
+
+            obstacles.forEach(obstacle => {
+                obstacle.y += obstacle.speed;
+                if (obstacle.y > canvas.height) {
+                    obstacles.shift();
+                    score++;
+                }
+
+                if (detectCollision(player, obstacle)) {
+                    if (score > highScore) {
+                        highScore = score;
+                        localStorage.setItem('highScore', highScore);
+                    }
+                    gameOver();
+                }
+            });
+        }
+
+        function detectCollision(player, obstacle) {
+            return player.x < obstacle.x + obstacle.width &&
+                   player.x + player.width > obstacle.x &&
+                   player.y < obstacle.y + obstacle.height &&
+                   player.y + player.height > obstacle.y;
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw background
+            ctx.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
+
+            // Draw player
+            ctx.fillStyle = 'blue';
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+
+            // Draw obstacles
+            ctx.fillStyle = 'red';
+            obstacles.forEach(obstacle => {
+                ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+            });
+
+            // Draw score
+            ctx.fillStyle = 'white';
+            ctx.font = '24px Arial';
+            ctx.fillText('Score: ' + score, 20, 30);
+            ctx.fillText('High Score: ' + highScore, 20, 60);
+        }
+
+        function gameLoop() {
+            update();
+            draw();
+            if (gameRunning && !gamePaused) {
+                requestAnimationFrame(gameLoop);
+            }
+        }
+
+        function gameOver() {
+            gameRunning = false;
+            document.getElementById('gameOverMessage').innerText = 'Game Over! Your score: ' + score + '\nHigh Score: ' + highScore;
+            document.getElementById('gameOverScreen').style.display = 'flex';
+        }
+
+        function pauseGame() {
+            if (!gameRunning) return; // Prevent pausing when the game is over
+            gamePaused = true;
+            document.getElementById('pauseScreen').style.display = 'flex';
+        }
+
+        function resumeGame() {
+            gamePaused = false;
+            document.getElementById('pauseScreen').style.display = 'none';
+            gameLoop();
+        }
+
+        function restartGame() {
+            gameRunning = true;
+            gamePaused = false;
+            score = 0;
+            frameCount = 0;
+            player.x = canvas.width / 2;
+            player.dx = 0;
+            obstacles.length = 0;
+            document.getElementById('gameOverScreen').style.display = 'none';
+            document.getElementById('pauseScreen').style.display = 'none';
+            gameLoop();
+        }
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'ArrowLeft' || e.key === 'a') {
+                player.dx = -player.speed;
+            } else if (e.key === 'ArrowRight' || e.key === 'd') {
+                player.dx = player.speed;
+            } else if (e.key === ' ') {
+                if (!gameRunning) {
+                    restartGame();
+                } else if (gamePaused) {
+                    resumeGame();
+                } else {
+                    pauseGame();
+                }
+            }
+        });
+
+        document.addEventListener('keyup', e => {
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'a' || e.key === 'd') {
+                player.dx = 0;
+            }
+        });
+
+    </script>
+</body>
+</html>

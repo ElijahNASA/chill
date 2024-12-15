@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="https://t4.ftcdn.net/jpg/05/89/54/43/240_F_589544352_Xetps8X6Zi6zUVIAsL04aWgv7CCBWjAB.jpg" type="image/x-icon">
+    <title>Google Classroom</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #000000;
+            color: #ffffff;
+            overflow: hidden;
+            background: linear-gradient(120deg, #000000, #8b0000);
+        }
+        .lock-screen {
+            text-align: center;
+            background: #ffffff;
+            padding: 30px 40px;
+            box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+        }
+        .lock-screen h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #343a40;
+        }
+        .button-container12 {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .lock-screen button {
+            padding: 12px 16px;
+            font-size: 18px;
+            color: #ffffff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .lock-screen button:hover {
+            background-color: #0056b3;
+        }
+        .hidden-content {
+            display: none;
+            margin-top: 20px;
+            font-size: 18px;
+            color: #28a745;
+        }
+        .error-message {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 10px;
+            display: none;
+        }
+        .password-display {
+            font-size: 18px;
+            margin-top: 15px;
+            font-weight: bold;
+            color: #6c757d;
+        }
+        .hidden-content {
+            display: none;
+            margin-top: 20px;
+            font-size: 18px;
+            color: #28a745;
+        }
+        header {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 2rem;
+        }
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .button-container a {
+            text-decoration: none;
+            padding: 1rem 2rem;
+            margin: 0.5rem 0;
+            background-color: #333;
+            color: #fff;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            transition: background-color 0.3s;
+        }
+        .button-container a:hover {
+            background-color: #555;
+        }
+        footer {
+            margin-top: 2rem;
+            font-size: 0.8rem;
+            color: #777;
+        }
+        .background-bubbles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        .background-bubbles span {
+            position: absolute;
+            display: block;
+            width: 10px;
+            height: 10px;
+            background: rgba(255, 255, 255, 1);
+            border-radius: 50%;
+            opacity: 0.8;
+            animation: bubbleAnimation linear infinite;
+        }
+        @keyframes bubbleAnimation {
+            0% {
+                transform: translateY(-100vh);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(100vh);
+                opacity: 0.6;
+            }
+        }
+        .background-bubbles span:nth-child(1) { left: 5%; animation-duration: 10s; animation-delay: 0s; width: 8px; height: 8px; }
+        .background-bubbles span:nth-child(2) { left: 15%; animation-duration: 15s; animation-delay: 2s; width: 12px; height: 12px; }
+        .background-bubbles span:nth-child(3) { left: 25%; animation-duration: 12s; animation-delay: 3s; width: 10px; height: 10px; }
+        .background-bubbles span:nth-child(4) { left: 35%; animation-duration: 14s; animation-delay: 1s; width: 7px; height: 7px; }
+        .background-bubbles span:nth-child(5) { left: 45%; animation-duration: 18s; animation-delay: 5s; width: 9px; height: 9px; }
+        .background-bubbles span:nth-child(6) { left: 55%; animation-duration: 13s; animation-delay: 4s; width: 11px; height: 11px; }
+        .background-bubbles span:nth-child(7) { left: 65%; animation-duration: 16s; animation-delay: 6s; width: 8px; height: 8px; }
+        .background-bubbles span:nth-child(8) { left: 75%; animation-duration: 11s; animation-delay: 7s; width: 10px; height: 10px; }
+        .background-bubbles span:nth-child(9) { left: 85%; animation-duration: 17s; animation-delay: 8s; width: 12px; height: 12px; }
+        .background-bubbles span:nth-child(10) { left: 95%; animation-duration: 20s; animation-delay: 9s; width: 14px; height: 14px; }
+        .background-bubbles span:nth-child(11) { left: 10%; animation-duration: 9s; animation-delay: 2s; width: 7px; height: 7px; }
+        .background-bubbles span:nth-child(12) { left: 20%; animation-duration: 18s; animation-delay: 4s; width: 12px; height: 12px; }
+        .background-bubbles span:nth-child(13) { left: 30%; animation-duration: 14s; animation-delay: 3s; width: 8px; height: 8px; }
+        .background-bubbles span:nth-child(14) { left: 40%; animation-duration: 10s; animation-delay: 1s; width: 9px; height: 9px; }
+        .background-bubbles span:nth-child(15) { left: 50%; animation-duration: 16s; animation-delay: 5s; width: 11px; height: 11px; }
+        .background-bubbles span:nth-child(16) { left: 60%; animation-duration: 13s; animation-delay: 7s; width: 10px; height: 10px; }
+        .background-bubbles span:nth-child(17) { left: 70%; animation-duration: 17s; animation-delay: 8s; width: 12px; height: 12px; }
+        .background-bubbles span:nth-child(18) { left: 80%; animation-duration: 11s; animation-delay: 2s; width: 13px; height: 13px; }
+        .background-bubbles span:nth-child(19) { left: 90%; animation-duration: 15s; animation-delay: 6s; width: 8px; height: 8px; }
+        .background-bubbles span:nth-child(20) { left: 5%; animation-duration: 14s; animation-delay: 5s; width: 10px; height: 10px; }
+        .background-bubbles span:nth-child(21) { left: 25%; animation-duration: 12s; animation-delay: 3s; width: 9px; height: 9px; }
+        .background-bubbles span:nth-child(22) { left: 35%; animation-duration: 11s; animation-delay: 4s; width: 11px; height: 11px; }
+        .background-bubbles span:nth-child(23) { left: 45%; animation-duration: 10s; animation-delay: 6s; width: 7px; height: 7px; }
+        .background-bubbles span:nth-child(24) { left: 55%; animation-duration: 15s; animation-delay: 1s; width: 10px; height: 10px; }
+        .background-bubbles span:nth-child(25) { left: 65%; animation-duration: 18s; animation-delay: 2s; width: 12px; height: 12px; }
+        .background-bubbles span:nth-child(26) { left: 75%; animation-duration: 16s; animation-delay: 5s; width: 9px; height: 9px; }
+        .background-bubbles span:nth-child(27) { left: 85%; animation-duration: 13s; animation-delay: 4s; width: 8px; height: 8px; }
+        .background-bubbles span:nth-child(28) { left: 95%; animation-duration: 14s; animation-delay: 7s; width: 11px; height: 11px; }
+        .background-bubbles span:nth-child(29) { left: 5%; animation-duration: 17s; animation-delay: 8s; width: 7px; height: 7px; }
+        .background-bubbles span:nth-child(30) { left: 15%; animation-duration: 20s; animation-delay: 9s; width: 12px; height: 12px; }
+        .background-bubbles span:nth-child(31) { left: 10%; animation-duration: 13s; animation-delay: 3s; width: 10px; height: 10px; }
+        .background-bubbles span:nth-child(32) { left: 20%; animation-duration: 18s; animation-delay: 6s; width: 9px; height: 9px; }
+        .background-bubbles span:nth-child(33) { left: 30%; animation-duration: 14s; animation-delay: 1s; width: 12px; height: 12px; }
+        .background-bubbles span:nth-child(34) { left: 40%; animation-duration: 15s; animation-delay: 4s; width: 8px; height: 8px; }
+        .background-bubbles span:nth-child(35) { left: 50%; animation-duration: 10s; animation-delay: 5s; width: 13px; height: 13px; }
+        .background-bubbles span:nth-child(36) { left: 60%; animation-duration: 20s; animation-delay: 2s; width: 7px; height: 7px; }
+        .background-bubbles span:nth-child(37) { left: 70%; animation-duration: 12s; animation-delay: 3s; width: 12px; height: 12px; }
+        .background-bubbles span:nth-child(38) { left: 80%; animation-duration: 11s; animation-delay: 6s; width: 9px; height: 9px; }
+    </style>
+</head>
+<body>
+    <div class="background-bubbles">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+    <div class="lock-screen">
+        <div class="button-container12">
+            <button data-value="1">1</button>
+            <button data-value="2">2</button>
+            <button data-value="3">3</button>
+            <button data-value="4">4</button>
+            <button data-value="5">5</button>
+            <button data-value="6">6</button>
+            <button data-value="7">7</button>
+            <button data-value="8">8</button>
+            <button data-value="9">9</button>
+            <button data-value="0">0</button>
+        </div>
+        <div class="password-display" id="passwordDisplay">Password: </div>
+        <p class="error-message" id="errorMessage">Incorrect password. Try again.</p>
+        <div class="hidden-content" id="hiddenContent">
+            <p>Unlocked! 🎉 Welcome to the hidden content!</p>
+            <div class="button-container">
+                <a href="games/kiddells/VolcanoGame.html">Block Dash</a>
+                <a href="games/Elijah's/shooter.html">Run From The Block</a>
+            </div>
+        </div>
+    </div>
+    <script>
+        const correctPassword = "7146";
+        let enteredPassword = "";
+        const passwordDisplay = document.getElementById("passwordDisplay");
+        const hiddenContent = document.getElementById("hiddenContent");
+        const errorMessage = document.getElementById("errorMessage");
+    
+        document.querySelectorAll(".lock-screen button").forEach(button => {
+            button.addEventListener("click", () => {
+                const value = button.getAttribute("data-value");
+                enteredPassword += value; // Append the button value to the entered password
+                passwordDisplay.textContent = `Password: ${enteredPassword}`; // Show the entered password
+    
+                // Check if the entered password matches the correct password
+                if (enteredPassword === correctPassword) {
+                    hiddenContent.style.display = "block";
+                    errorMessage.style.display = "none";
+                } else if (enteredPassword.length >= correctPassword.length) {
+                    // If the password is incorrect and fully entered, reset and show an error
+                    enteredPassword = "";
+                    passwordDisplay.textContent = "Password: ";
+                    errorMessage.style.display = "block";
+                    hiddenContent.style.display = "none";
+                }
+            });
+        });
+    </script>
+</body>
+</html>
