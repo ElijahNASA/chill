@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Google Classroom</title>
+  <style>
+body {
+  font-family: Arial, sans-serif;
+  background-color: #2d3436;
+  color: #dfe6e9;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+.main-container {
+  display: flex;
+  gap: 30px;
+}
+.game-container {
+  width: 400px;
+  padding: 20px;
+  background-color: #636e72;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+h1 {
+  margin-bottom: 20px;
+  font-size: 2rem;
+  color: #00cec9;
+}
+.slot-machine {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+  background-color: #2d3436;
+  padding: 15px;
+  border-radius: 10px;
+  border: 2px solid #00cec9;
+}
+.slot {
+  font-size: 3rem;
+  margin: 0 10px;
+  color: #fdcb6e;
+}
+button {
+  background-color: #00cec9;
+  color: #2d3436;
+  padding: 10px 20px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+button:hover {
+  background-color: #81ecec;
+}
+.instructions {
+  margin-top: 20px;
+  font-size: 1.2rem;
+  color: #b2bec3;
+}
+#scoreDisplay {
+  font-size: 1.5rem;
+  color: #00cec9;
+}
+.store-container {
+  width: 250px;
+  padding: 20px;
+  background-color: #636e72;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+.store-container h2 {
+  font-size: 1.8rem;
+  color: #fdcb6e;
+}
+.store-item {
+  margin: 10px;
+  background-color: #fdcb6e;
+  color: #2d3436;
+  padding: 10px 20px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.store-item:hover {
+  background-color: #ffeaa7;
+}
+#storeMessage {
+  margin-top: 20px;
+  font-size: 1.2rem;
+  color: #d63031;
+}
+  </style>
+</head>
+<body>
+  <div class="main-container">
+    <div class="game-container">
+      <h1>Slot Machine</h1>
+      <p id="scoreDisplay">Score: 0</p>
+      <div class="slot-machine" id="slotMachine1">
+        <div class="slot" id="slot1">🍒</div>
+        <div class="slot" id="slot2">🍋</div>
+        <div class="slot" id="slot3">🍊</div>
+      </div>
+      <button id="spinButton">Spin</button>
+      <p id="result" class="instructions"></p>
+    </div>
+    <div class="store-container">
+      <h2>Store</h2>
+      <p>Use your score to buy games and power-ups:</p>
+      <button class="store-item" data-cost="500000000">FLEX / Pro Gamble (+500,000,000)</button>
+      <button class="store-item" data-cost="10">Wirdo / Semi Pro Gamble (+100,000)</button>
+      <button class="store-item" id="buyGoldTheme" data-cost="500">Gold Theme (+500)</button>
+      <button class="store-item" id="buyPinkTheme" data-cost="300">Pink Theme (+300)</button>
+      <button class="store-item" id="buyBlueTheme" data-cost="400">Blue Theme (+400)</button>
+      <button class="store-item" id="buyRedTheme" data-cost="600">Red Theme (+600)</button>
+      <p id="storeMessage"></p>
+    </div>
+  </div>
+  <script>
+    let flashInterval;
+function startFlashing() {
+  if (flashInterval) {
+    clearInterval(flashInterval);
+  }
+  flashInterval = setInterval(function() {
+    document.body.style.backgroundColor = 
+      document.body.style.backgroundColor === "red" ? "yellow" : "red";
+  }, 100);
+}
+    const spinButton = document.getElementById("spinButton");
+    const slots = [
+      document.getElementById("slot1"),
+      document.getElementById("slot2"),
+      document.getElementById("slot3"),
+    ];
+    const resultElement = document.getElementById("result");
+    const scoreDisplay = document.getElementById("scoreDisplay");
+    const storeMessage = document.getElementById("storeMessage");
+    const flashThing = document.getElementById("StartFlashing");
+    const buySlotMachineButton = document.getElementById("buySlotMachine");
+    const buyGoldThemeButton = document.getElementById("buyGoldTheme");
+    const buyPinkThemeButton = document.getElementById("buyPinkTheme");
+    const buyBlueThemeButton = document.getElementById("buyBlueTheme");
+    const buyRedThemeButton = document.getElementById("buyRedTheme");
+    let score = 0;
+    let spinning = false;
+    let spinInterval;
+    let slotMachineCount = 1;
+    const emojis = ["🍒", "🍋", "🍊", "🍇", "🍉", "⭐"];
+    function startSpinning(slotMachineId) {
+      const slotsInMachine = document.querySelectorAll(`#${slotMachineId} .slot`);
+      spinInterval = setInterval(() => {
+        slotsInMachine.forEach((slot) => {
+          const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+          slot.textContent = randomEmoji;
+        });
+      }, 100);
+    }
+    function stopSpinning(slotMachineId) {
+      clearInterval(spinInterval);
+      spinning = false;
+
+      const slotsInMachine = document.querySelectorAll(`#${slotMachineId} .slot`);
+      const slotValues = Array.from(slotsInMachine).map(slot => slot.textContent);
+      
+      if (slotValues[0] === slotValues[1] && slotValues[1] === slotValues[2]) {
+        resultElement.textContent = "🎉 Jackpot! +50 points!";
+        score += 50;
+      } else if (slotValues[0] === slotValues[1] || slotValues[1] === slotValues[2] || slotValues[0] === slotValues[2]) {
+        resultElement.textContent = "✨ Small Win! +20 points!";
+        score += 20;
+      } else {
+        resultElement.textContent = "😞 Try Again! +5 points!";
+        score += 5;
+      }
+      scoreDisplay.textContent = `Score: ${score}`;
+    }
+    spinButton.addEventListener("click", () => {
+      if (spinning) {
+        stopSpinning(`slotMachine${slotMachineCount}`);
+        spinButton.textContent = "Start Spinning Again";
+      } else {
+        spinning = true;
+        resultElement.textContent = "";
+        startSpinning(`slotMachine${slotMachineCount}`);
+        spinButton.textContent = "Spin";
+      }
+    });
+    buySlotMachineButton.addEventListener("click", () => {
+      if (score >= 200) {
+        score -= 200;
+        scoreDisplay.textContent = `Score: ${score}`;
+        slotMachineCount++;
+        const newSlotMachine = document.createElement("div");
+        newSlotMachine.classList.add("slot-machine");
+        newSlotMachine.id = `slotMachine${slotMachineCount}`;
+        
+        newSlotMachine.innerHTML = `
+          <div class="slot">🍒</div>
+          <div class="slot">🍋</div>
+          <div class="slot">🍊</div>
+        `;
+        document.querySelector(".main-container").appendChild(newSlotMachine);
+        storeMessage.textContent = "You bought a new slot machine!";
+      } else {
+        storeMessage.textContent = "You don't have enough points!";
+      }
+    });
+    function applyTheme(theme) {
+      switch(theme) {
+        case 'gold':
+          document.body.style.backgroundColor = "#2c3e50";
+          document.querySelector(".main-container").style.backgroundColor = "#1c2833";
+          document.querySelector(".game-container").style.backgroundColor = "#34495e";
+          document.querySelector(".game-container").style.border = "3px solid #f1c40f";
+          document.querySelectorAll(".slot-machine").forEach(slotMachine => {
+            slotMachine.style.border = "2px solid #f1c40f";
+          });
+          document.querySelectorAll(".slot").forEach(slot => {
+            slot.style.color = "#f39c12";
+          });
+          document.querySelectorAll("button").forEach(button => {
+            button.style.backgroundColor = "#f1c40f";
+            button.style.color = "#2c3e50";
+          });
+          break;
+        case 'pink':
+          document.body.style.backgroundColor = "#f8c8d1";
+          document.querySelector(".main-container").style.backgroundColor = "#f4a6b4";
+          document.querySelector(".game-container").style.backgroundColor = "#f1b2d6";
+          document.querySelector(".game-container").style.border = "3px solid #e91e63";
+          document.querySelectorAll(".slot-machine").forEach(slotMachine => {
+            slotMachine.style.border = "2px solid #e91e63";
+          });
+          document.querySelectorAll(".slot").forEach(slot => {
+            slot.style.color = "#e91e63";
+          });
+          document.querySelectorAll("button").forEach(button => {
+            button.style.backgroundColor = "#e91e63";
+            button.style.color = "#fff";
+          });
+          break;
+        case 'blue':
+          document.body.style.backgroundColor = "#2c3e50";
+          document.querySelector(".main-container").style.backgroundColor = "#1e3a5d";
+          document.querySelector(".game-container").style.backgroundColor = "#34495e";
+          document.querySelector(".game-container").style.border = "3px solid #3498db";
+          document.querySelectorAll(".slot-machine").forEach(slotMachine => {
+            slotMachine.style.border = "2px solid #3498db";
+          });
+          document.querySelectorAll(".slot").forEach(slot => {
+            slot.style.color = "#3498db";
+          });
+          document.querySelectorAll("button").forEach(button => {
+            button.style.backgroundColor = "#3498db";
+            button.style.color = "#fff";
+          });
+          break;
+        case 'red':
+          document.body.style.backgroundColor = "#2c3e50";
+          document.querySelector(".main-container").style.backgroundColor = "#c0392b";
+          document.querySelector(".game-container").style.backgroundColor = "#e74c3c";
+          document.querySelector(".game-container").style.border = "3px solid #c0392b";
+          document.querySelectorAll(".slot-machine").forEach(slotMachine => {
+            slotMachine.style.border = "2px solid #c0392b";
+          });
+          document.querySelectorAll(".slot").forEach(slot => {
+            slot.style.color = "#c0392b";
+          });
+          document.querySelectorAll("button").forEach(button => {
+            button.style.backgroundColor = "#c0392b";
+            button.style.color = "#fff";
+          });
+          break;
+      }
+    }
+    buyGoldThemeButton.addEventListener("click", () => {
+      if (score >= 500) {
+        score -= 500;
+        scoreDisplay.textContent = `Score: ${score}`;
+        applyTheme('gold');
+        storeMessage.textContent = "You activated the Gold Theme!";
+        buyGoldThemeButton.disabled = true;
+      } else {
+        storeMessage.textContent = "Not enough points for Gold Theme!";
+      }
+    });
+    buyPinkThemeButton.addEventListener("click", () => {
+      if (score >= 300) {
+        score -= 300;
+        scoreDisplay.textContent = `Score: ${score}`;
+        applyTheme('pink');
+        storeMessage.textContent = "You activated the Pink Theme!";
+        buyPinkThemeButton.disabled = true;
+      } else {
+        storeMessage.textContent = "Not enough points for Pink Theme!";
+      }
+    });
+    buyBlueThemeButton.addEventListener("click", () => {
+      if (score >= 400) {
+        score -= 400;
+        scoreDisplay.textContent = `Score: ${score}`;
+        applyTheme('blue');
+        storeMessage.textContent = "You activated the Blue Theme!";
+        buyBlueThemeButton.disabled = true;
+      } else {
+        storeMessage.textContent = "Not enough points for Blue Theme!";
+      }
+    });
+    buyRedThemeButton.addEventListener("click", () => {
+      if (score >= 600) {
+        score -= 600;
+        scoreDisplay.textContent = `Score: ${score}`;
+        applyTheme('red');
+        storeMessage.textContent = "You activated the Red Theme!";
+        buyRedThemeButton.disabled = true;
+      } else {
+        storeMessage.textContent = "Not enough points for Red Theme!";
+      }
+    });
+    flashThing.addEventListener("click", () => {
+      if (score >= 10) {
+        score -= 10;
+        scoreDisplay.textContent = `Score: ${score}`;
+        storeMessage.textContent = "YYYYYYYYYYYYYYYYYYYYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAYYYYYYYYYYYYYYYYYYYYYYYYYYYYY";
+      } else {
+        storeMessage.textContent = "Your a poor HOBO!"
+      }
+    })
+  </script>
+</body>
+</html>
